@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Smart Task Tracker</title>
+    <style>
+        body {
+            background: url('/static/images/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            color: white;
+            padding-top: 150px;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 50px;
+            border-radius: 10px;
+            width: 50%;
+            margin: auto;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Smart Task Tracker</h1>
+        <p>Manage tasks efficiently with ease.</p>
+        <a href="{% url 'dashboard' %}" class="btn">Go to Dashboard</a>
+    </div>
+</body>
+</html>

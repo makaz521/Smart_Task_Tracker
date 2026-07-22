@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Task Tracker - Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #121212, #1a1a1a);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            position: fixed;
+            border-right: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        .sidebar h3 {
+            color: #2ecc71;
+            text-transform: uppercase;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease-in-out;
+        }
+        .sidebar a:hover, .sidebar .active {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            transform: scale(1.05);
+        }
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+        .card {
+            background: rgba(43, 43, 43, 0.8);
+            border-radius: 15px;
+            text-align: center;
+            padding: 20px;
+            color: white;
+            box-shadow: 4px 4px 10px rgba(0, 255, 128, 0.1);
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 4px 4px 15px rgba(0, 255, 128, 0.3);
+        }
+        .graph-box, .sms-box, .role-box {
+            background: rgba(43, 43, 43, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 3px 3px 10px rgba(255, 255, 255, 0.1);
+        }
+        .sms-box button {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease-in-out;
+        }
+        .sms-box button:hover {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            transform: scale(1.05);
+        }
+        canvas {
+            max-height: 250px !important;
+            width: 100% !important;
+        }
+        .role-box select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(30, 30, 30, 0.9);
+            color: white;
+            transition: all 0.3s ease-in-out;
+        }
+        .role-box select:hover {
+            background: rgba(45, 45, 45, 0.9);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>Smart Task Tracker</h3>
+        <a href="#" class="active">Dashboard</a>
+        <a href="{% url 'tasks' %}">Tasks</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'settings' %}">Settings</a>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Dashboard</h2>
+        <p>Welcome, <span id="username">{{ user.username }}</span></p>
+
+        <!-- Role Selection -->
+        <div class="role-box">
+            <label for="roleSelect">Select Role:</label>
+            <select id="roleSelect">
+                <option value="">-- Choose Role --</option>
+                <option value="Manager">Manager</option>
+                <option value="Team Member">Team Member</option>
+            </select>
+            <button onclick="setUserRole()">Continue</button>
+        </div>
+
+        <!-- Task Summary -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Completed Tasks</h5>
+                    <h2>25</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Pending Tasks</h5>
+                    <h2>10</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Team Members</h5>
+                    <h2>5</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Progress Chart -->
+        <div class="graph-box">
+            <h4>Task Progress</h4>
+            <canvas id="taskChart"></canvas>
+        </div>
+
+        <!-- SMS Notifications -->
+        <div class="sms-box">
+            <h4>SMS Notifications</h4>
+            <p>Stay updated with real-time task alerts.</p>
+            <button>Enable Alerts</button>
+        </div>
+    </div>
+
+    <!-- Chart Script -->
+    <script>
+        // Animate Chart Load
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById("taskChart").getContext("2d");
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["Completed", "Pending"],
+                    datasets: [{
+                        label: "Tasks",
+                        data: [25, 10],
+                        backgroundColor: ["#27ae60", "#f39c12"],
+                        borderColor: ["#145a32", "#b9770e"],
+                        borderWidth: 1,
+                        hoverBackgroundColor: ["#2ecc71", "#f1c40f"]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: "easeInOutQuart"
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: "white" }
+                        },
+                        x: {
+                            ticks: { color: "white" }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Role Selection Logic
+        function setUserRole() {
+            let selectedRole = document.getElementById("roleSelect").value;
+            if (!selectedRole) {
+                alert("Please select a role!");
+                return;
+            }
+
+            fetch("{% url 'set_role' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ role: selectedRole })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{% url 'login' %}";
+                } else {
+                    alert("Error selecting role. Try again.");
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>

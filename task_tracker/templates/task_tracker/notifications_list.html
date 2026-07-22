@@ -1,0 +1,8 @@
+{% for notification in notifications %}
+    <div class="notification">
+        <p>{{ notification.message }}</p>
+        <span class="date">{{ notification.created_at }}</span>
+    </div>
+{% empty %}
+    <p>No notifications available.</p>
+{% endfor %}

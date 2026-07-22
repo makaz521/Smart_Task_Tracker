@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Assign Task</title>
+</head>
+<body>
+    <h2>Assign a Task</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Task Name:</label>
+        <input type="text" name="task_name" required>
+        
+        <label>Assign To:</label>
+        <input type="text" name="assigned_to" required>
+        
+        <label>Deadline:</label>
+        <input type="date" name="deadline" required>
+        
+        <button type="submit">Assign Task</button>
+    </form>
+</body>
+</html>

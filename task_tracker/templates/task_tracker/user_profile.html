@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Profile</title>
+    <style>
+        /* Add some basic styles for the profile page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-content {
+            width: 60%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        header p {
+            color: #666;
+        }
+
+        .profile-info {
+            margin-bottom: 20px;
+        }
+
+        .profile-info h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .profile-info p {
+            font-size: 1.1em;
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .profile-info strong {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <header>
+            <h1>Your Profile</h1>
+            <p>Manage your personal details below.</p>
+        </header>
+
+        <section class="profile-info">
+            <h2>Profile Information</h2>
+            <p><strong>Username:</strong> {{ profile.user.username }}</p>
+            <p><strong>Role:</strong> {{ profile.role }}</p>
+            <p><strong>Phone Number:</strong> {{ profile.phone_number|default:"Not Provided" }}</p>
+
+            <h3>Update Phone Number</h3>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Update Phone Number</button>
+            </form>
+        </section>
+
+        <div class="action-buttons">
+            <a href="{% url 'team_dashboard' %}"></a>
+                <button>Back to Dashboard</button>
+            </a>
+
+            <a href="{% url 'logout' %}">
+                <button>Logout</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

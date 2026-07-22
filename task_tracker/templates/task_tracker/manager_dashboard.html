@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - Smart Task Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #121212; color: white; font-family: Arial, sans-serif; }
+        .sidebar { width: 250px; height: 100vh; background-color: #1e1e1e; padding: 20px; position: fixed; }
+        .sidebar h3 { color: #2ecc71; }
+        .sidebar a { display: block; color: white; text-decoration: none; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .sidebar a:hover, .sidebar .active { background-color: #2ecc71; }
+        .main-content { margin-left: 270px; padding: 20px; }
+
+        /* Improved Card Styling */
+        .card {
+            background-color: #2b2b2b;
+            border-radius: 10px;
+            text-align: center;
+            padding: 20px;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        /* Assign Task Box */
+        .assign-box { background-color: #2b2b2b; border-radius: 10px; padding: 20px; margin-top: 20px; text-align: center; }
+        .assign-box form input, .assign-box form select, .assign-box form button { width: 100%; margin-top: 10px; padding: 10px; border-radius: 5px; border: none; }
+        .assign-box form button { background-color: #2ecc71; cursor: pointer; color: white; font-weight: bold; }
+        .assign-box form button:hover { background-color: #27ae60; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>Manager Dashboard</h3>
+        <a href="{% url 'manager_dashboard' %}" class="active">Dashboard</a>
+        <a href="{% url 'tasks' %}">Tasks</a>
+        <a href="{% url 'reports' %}">Reports</a>
+        <a href="{% url 'settings' %}">Settings</a>
+
+        <form action="{% url 'logout' %}" method="post" onsubmit="return confirmLogout()">
+            {% csrf_token %}
+            <button type="submit" style="width: 100%; background-color: red; color: white; padding: 10px; 
+                border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">
+                Logout
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Welcome, {{ request.user.username }}</h2>
+
+        <!-- Task Summary -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Completed Tasks</h5>
+                    <h2>{{ completed_tasks }}</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Pending Tasks</h5>
+                    <h2>{{ pending_tasks }}</h2>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <h5>Team Members</h5>
+                    <h2>{{ total_team_members }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assign Tasks -->
+        <div class="assign-box">
+            <h4>Assign Task</h4>
+
+            <form action="{% url 'assign_task' %}" method="post">
+                {% csrf_token %}
+                <input type="text" name="task_name" placeholder="Task Name" required>
+                <select name="assigned_to" required>
+                    <option value="">Select Team Member</option>
+                    {% for member in team_members %}
+                        <option value="{{ member.id }}">{{ member.username }}</option>
+                    {% endfor %}
+                </select>
+                <input type="datetime-local" name="deadline" required>  <!-- ✅ Updated Deadline Field -->
+                <button type="submit">Assign Task</button>
+            </form>
+            <script>
+                function validateDeadline() {
+                    const deadlineInput = document.getElementById("deadline");
+                    const selectedDate = new Date(deadlineInput.value);
+                    const now = new Date();
+                
+                    if (selectedDate < now) {
+                        alert("You cannot assign a task with a past deadline.");
+                        return false; // Prevent form submission
+                    }
+                
+                    return true; // Allow form submission
+                }
+                </script>
+        </div>
+    </div>
+
+    <script>
+        function confirmLogout() {
+            return confirm("Are you sure you want to logout?");
+        }
+    </script>
+
+</body>
+</html>

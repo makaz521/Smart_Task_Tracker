@@ -1,0 +1,267 @@
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <h2>Team Member Panel</h2>
+        <ul>
+            <li><a href="#">Dashboard</a></li>
+            <li><a href="#">My Tasks</a></li>
+            <li>
+                <a href="{% url 'notifications' %}">
+                    Notifications <span id="notification-count" class="badge">0</span>
+                </a>
+            </li>
+            <li><a href="{% url 'user_profile' %}">Profile</a></li> <!-- Profile link -->
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <header>
+            <h1>Welcome, {{ request.user.username }}</h1>
+            <p>Track your assigned tasks efficiently.</p>
+        </header>
+
+        <!-- Tasks Section -->
+        <section class="tasks">
+            <h2>My Tasks</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Deadline</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Update</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>{{ task.name }}</td>
+                        <td>{{ task.deadline }}</td>
+                        <td>
+                            <select class="status-dropdown" data-task-id="{{ task.id }}">
+                                <option value="Pending" {% if task.status == "Pending" %}selected{% endif %}>Pending</option>
+                                <option value="In Progress" {% if task.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if task.status == "Completed" %}selected{% endif %}>Completed</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: {{ task.progress }}%;"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="update-task-btn" data-task-id="{{ task.id }}">Save</button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No tasks assigned yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Notifications Section -->
+        <section class="notifications">
+            <h2>Notifications</h2>
+            <ul id="notification-list">
+                {% for notification in notifications %}
+                    <li class="notification-item {% if not notification.read %}unread{% endif %}" data-id="{{ notification.id }}">
+                        {{ notification.message }}
+                        <span class="time">{{ notification.created_at|timesince }} ago</span>
+                    </li>
+                {% empty %}
+                    <li>No new notifications.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    </div>
+</div>
+
+<!-- Include jQuery for AJAX -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Update task status via AJAX
+        $(".update-task-btn").click(function() {
+            var taskId = $(this).data("task-id");
+            var newStatus = $(this).closest("tr").find(".status-dropdown").val();
+
+            $.ajax({
+                url: "{% url 'update_task_status' %}",
+                type: "POST",
+                data: {
+                    "task_id": taskId,
+                    "new_status": newStatus,
+                    "csrfmiddlewaretoken": "{{ csrf_token }}"
+                },
+                success: function(response) {
+                    if (response.success) {
+                        alert("Task status updated successfully!");
+                        location.reload();
+                    } else {
+                        alert("Failed to update task status.");
+                    }
+                }
+            });
+        });
+
+        // Fetch notifications dynamically
+        function fetchNotifications() {
+            $.ajax({
+                url: "{% url 'notifications' %}",
+                type: "GET",
+                success: function (data) {
+                    $("#notification-list").html(data.html);
+                    $("#notification-count").text(data.count);
+                }
+            });
+        }
+
+        // Mark notifications as read when clicking the notification panel
+        $("#notification-list").on("click", ".notification-item", function () {
+            $.ajax({
+                url: "{% url 'mark_notifications_as_read' %}",
+                type: "POST",
+                data: { "csrfmiddlewaretoken": "{{ csrf_token }}" },
+                success: function (data) {
+                    if (data.success) {
+                        $(".notification-item").removeClass("unread");
+                        $("#notification-count").text("0");
+                    }
+                }
+            });
+        });
+
+        // Refresh notifications every 60 seconds
+        setInterval(fetchNotifications, 60000);
+    });
+</script>
+
+<!-- Updated Styling -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #1a1a1a;
+        color: #ffffff;
+    }
+    .dashboard-container {
+        display: flex;
+    }
+    .sidebar {
+        width: 250px;
+        background: #2c2c2c;
+        padding: 20px;
+        height: 100vh;
+    }
+    .sidebar h2 {
+        color: #4CAF50;
+    }
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+    .sidebar ul li {
+        margin: 20px 0;
+    }
+    .sidebar ul li a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        background: #222;
+    }
+    header {
+        margin-bottom: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: #333;
+    }
+    table th, table td {
+        padding: 12px;
+        border: 1px solid #444;
+        text-align: center;
+    }
+    table th {
+        background: #444;
+        color: #4CAF50;
+    }
+    .status-dropdown {
+        padding: 5px;
+        border-radius: 5px;
+        border: none;
+        background: #4CAF50;
+        color: white;
+    }
+    .status {
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .completed {
+        background: green;
+        color: white;
+    }
+    .progress {
+        background: yellow;
+        color: black;
+    }
+    .pending {
+        background: orange;
+        color: black;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 10px;
+        background: #444;
+        border-radius: 5px;
+    }
+    .progress-bar .progress {
+        height: 100%;
+        background: #4CAF50;
+        border-radius: 5px;
+    }
+    .update-task-btn {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    /* Notifications */
+    .notifications {
+        margin-top: 30px;
+        padding: 15px;
+        background: #333;
+        border-radius: 5px;
+    }
+    .notifications h2 {
+        color: #4CAF50;
+    }
+    .notification-item {
+        padding: 10px;
+        border-bottom: 1px solid #444;
+    }
+    .notification-item.unread {
+        background: #444;
+        font-weight: bold;
+    }
+    .badge {
+        background: red;
+        color: white;
+        padding: 3px 7px;
+        border-radius: 50%;
+        font-size: 12px;
+    }
+</style>
